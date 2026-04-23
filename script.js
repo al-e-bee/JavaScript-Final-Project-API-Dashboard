@@ -128,7 +128,7 @@ const userOutput = document.getElementById("github-output");
 
 // Function for GitHub API
 
-async function getUser(){
+async function fetchUser(){
     const username = prompt("Enter a GitHub username:");
     if(!username) return;
     try{
@@ -138,7 +138,7 @@ async function getUser(){
             userOutput.innerHTML = `<p>User "${username}" not found. Try again!</p>`;
             return;
         }
-        
+
         const data = await response.json();
 
         userOutput.innerHTML = `
@@ -151,8 +151,66 @@ async function getUser(){
             </div>
             `;
     } catch (error){
-        userOutput.innerText = "Error loading GitHub User API";
+        userOutput.innerText = "Error fetching GitHub User";
     }
 }
 
-getUserButton.addEventListener("click", getUser);
+getUserButton.addEventListener("click", fetchUser);
+
+
+// --- Elements for Joke API ---
+
+const getJokeButton = document.getElementById("getJoke");
+const jokeOutput = document.getElementById("joke-output");
+
+
+// Function for Joke API 
+
+async function fetchJoke(){
+    try{
+        const response = await fetch("https://v2.jokeapi.dev/joke/Any?safe-mode");
+        const data = await response.json();
+
+        let finalJoke = "";
+
+        if(data.type === "single"){
+            finalJoke = `<p>${data.joke}</p>`;
+        } else {
+            finalJoke = `
+            <p><strong>${data.setup}</strong></p>
+            <p><em>${data.delivery}</em></p>
+            `;
+        }
+
+        jokeOutput.innerHTML = finalJoke;
+    } catch (error){
+        jokeOutput.innerText = "Error loading joke. This is some serious funny business..."; 
+    }
+}
+
+getJokeButton.addEventListener("click", fetchJoke);
+
+// --- Elements for Public API ---
+
+const publicApiButton = document.getElementById("getPublicApiInfo");
+const publicApiOutput = document.getElementById("publicapi-output");
+
+// Function for Public API
+
+async function fetchPublicApi(){
+    try {
+        const response = await fetch("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY");
+        const data = await response.json();
+
+        publicApiOutput.innerHTML = `
+        <div class="nasa-container">
+            <img src="${data.url}" alt="${data.title}" style="width: 100%; border-radius: 8px";>
+            <h4 style="margin-top: 10px;">${data.title}</h4>
+            </div>
+            `;
+    } catch (error){
+        publicApiOutput.innerText = "The stars are hidden today. Check back later!";
+    }
+}
+
+publicApiButton.addEventListener("click", fetchPublicApi);
