@@ -120,3 +120,39 @@ async function fetchMovies(){
 }
 
 moviesButton.addEventListener("click", fetchMovies);
+
+// --- Elements for GitHub User API ---
+
+const getUserButton = document.getElementById("getGitHubUser");
+const userOutput = document.getElementById("github-output");
+
+// Function for GitHub API
+
+async function getUser(){
+    const username = prompt("Enter a GitHub username:");
+    if(!username) return;
+    try{
+        const response = await fetch(`https://api.github.com/users/${username}`);
+
+        if(!response.ok){
+            userOutput.innerHTML = `<p>User "${username}" not found. Try again!</p>`;
+            return;
+        }
+        
+        const data = await response.json();
+
+        userOutput.innerHTML = `
+        <div class="github-profile">
+                <img src="${data.avatar_url}" alt="${data.login}" style="width: 80px; border-radius: 50%;">
+                <h3>${data.name || data.login}</h3>
+                <p>${data.bio || "No bio available"}</p>
+                <p><strong>Repos:</strong> ${data.public_repos}</p>
+                <a href="${data.html_url}" target="_blank">View Profile</a>
+            </div>
+            `;
+    } catch (error){
+        userOutput.innerText = "Error loading GitHub User API";
+    }
+}
+
+getUserButton.addEventListener("click", getUser);
