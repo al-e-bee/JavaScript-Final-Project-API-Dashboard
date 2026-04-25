@@ -37,21 +37,42 @@ catButton.addEventListener("click", fetchCat);
 // --- Elements for Weather API ---
 const weatherButton = document.getElementById("getWeather");
 const weatherOutput = document.getElementById("weather-output");
+const weatherInput = document.getElementById("weather-query");
 
 // Function for Weather API 
 
 async function fetchWeather(){
-    try{
-        const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=34.0522&longitude=-118.2437&current_weather=true");
+    const city = weatherInput.value;
+    if(!city){
+        weatherOutput.innerHTML = "<p>Please enter a city name!</p>";
+        return;
+    }
 
-        const data = await response.json();
-        const tempC = data.current_weather.temperature;
+    try{
+        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+
+        const geoData = await geoResponse.json();
+
+        if(!geoData.results){
+            weatherOutput.innerHTML =`<p>City "${city}" not found. Try again!</p>`;
+            return;
+        }
+
+        const {latitude, longitude, name, admin1} = geoData.results[0];
+
+        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        
+        const weatherData = await weatherResponse.json();
+
+        const tempC = weatherData.current_weather.temperature;
         const tempF = (tempC * 1.8) + 32;
 
         weatherOutput.innerHTML = `
-        <h3>Los Angeles, CA</h3>
+        <div class = "weather-result">
+        <h3>${name}, ${admin1 || ''}</h3>
         <p>Temperature: ${tempF.toFixed(1)}°F</p>
         <p>(${tempC}°C)</p>
+        </div>
         `;
     } catch (error){
         weatherOutput.innerText = "Error loading the weather";
@@ -125,12 +146,16 @@ moviesButton.addEventListener("click", fetchMovies);
 
 const getUserButton = document.getElementById("getGitHubUser");
 const userOutput = document.getElementById("github-output");
+const githubInput = document.getElementById("github-query");
 
 // Function for GitHub API
 
 async function fetchUser(){
-    const username = prompt("Enter a GitHub username:");
-    if(!username) return;
+    const username = githubInput.value.trim();
+    if(!username){
+        userOutput.innerHTML = `<p>Please enter a username!</p>`;
+        return;
+    } 
     try{
         const response = await fetch(`https://api.github.com/users/${username}`);
 
@@ -151,7 +176,7 @@ async function fetchUser(){
             </div>
             `;
     } catch (error){
-        userOutput.innerText = "Error fetching GitHub User";
+        userOutput.innerText = "Error fetching GitHub User API";
     }
 }
 
